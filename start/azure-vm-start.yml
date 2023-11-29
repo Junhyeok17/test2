@@ -46,9 +46,8 @@ steps:
     echo "DKNS IMG: $TESTIMGDKNS"
 
     psexec -accepteula \\$AgentIP -u Junhyeok -p soongsil@2018
-- task: Delay@1
-  inputs:
-    delayForMinutes: '8' # string. Required. Delay Time (minutes). Default: 0.
+    Write-Host "Waiting for 60 seconds..."
+    Start-Sleep -Seconds 1
     #-i 2 -h cmd /C start /MIN C:/test.bat $TESTIMG $ISSUE $TEST $Agent $dkns
   displayName: 'Azure Start VM/Run Test(PsExec)'
   workingDirectory: $(Build.SourcesDirectory)/start
