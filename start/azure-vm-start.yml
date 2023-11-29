@@ -17,7 +17,7 @@ steps:
     $Agent = $jsonOutput | Where-Object { $_.name -match "Agent" } | Select-Object -ExpandProperty name
     $dkns = $jsonOutput | Where-Object { $_.name -match "dkns" } | Select-Object -ExpandProperty name
 
-    $Agent = "정준혁02-Agent"
+    $Agent = "정준혁01-Agent"
     $dkns = "jjh-dkns"
 
     $AgentNumber = [regex]::Match($Agent, 'Agent(\d+)').Groups[1].Value
