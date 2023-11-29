@@ -1,0 +1,17 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+# trigger:
+# - main
+
+jobs:
+- job: StopAgent
+  displayName: 'Stop Agent'
+  pool:
+    name: default
+  steps:
+  - powershell: |
+      Stop-Service -Name "두지수01Agent" -ErrorAction SilentlyContinue
+    displayName: 'Stop 두지수01Agent'

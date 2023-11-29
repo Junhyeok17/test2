@@ -1,0 +1,50 @@
+steps:
+- script: |
+    az login --service-principal -u 0cd2a780-3598-4328-8db8-8b7ba273e024 -p 7wj8Q~ZoQE19B3yHSRlA9XoXzu63nIHjCWuI8a1Z --tenant c86959ed-45e5-47f5-8ef5-308ca79916fc
+    cd $(Agent.BuildDirectory)
+  displayName: 'Azure Login'
+
+- powershell: |
+    $TESTIMG = $env:TESTIMG -replace '"', ''
+    $ISSUE = $env:ISSUE -replace '"', ''
+    $TEST = $env:TEST -replace '"', ''
+
+    echo "TESTIMG: $env:TESTIMG"
+    echo "ISSUE: $env:ISSUE"
+    echo "TEST: $env:TEST"
+
+    $jsonOutput = az vm list --show-details --query "[?powerState=='VM deallocated']" | Out-String | ConvertFrom-Json
+    $Agent = $jsonOutput | Where-Object { $_.name -match "Agent" } | Select-Object -ExpandProperty name
+    $dkns = $jsonOutput | Where-Object { $_.name -match "dkns" } | Select-Object -ExpandProperty name
+
+    $Agent = "두지수01Agent"
+    $dkns = "djisu.dkns"
+
+    $AgentNumber = [regex]::Match($Agent, 'Agent(\d+)').Groups[1].Value
+    $dknsNumber = [regex]::Match($dkns, 'dkns(\d+)').Groups[1].Value
+
+    echo "가상 머신 $AgentNumber 확인 됨."
+    echo "가상 머신 $dknsNumber 확인 됨."
+
+
+    az vm start --name $Agent --resource-group Automated_Test
+    az vm start --name $dkns --resource-group Automated_Test
+
+    echo "가상 머신 $Agent 시작됨."
+    echo "가상 머신 $dkns 시작됨."
+
+    $AgentIP = az vm show -d -g Automated_Test -n $Agent --query publicIps -o tsv
+    $dknsIP = az vm show -d -g Automated_Test -n $dkns --query publicIps -o tsv
+
+    echo "공인IP $AgentIP"
+    echo "공인IP $dknsIP"
+
+    $ISSUEDKNS = $ISSUE -replace '-', '' -replace 'GN', 'gn'
+    $TESTIMGDKNS = $TESTIMG -replace 'CLOUD', 'DKNS' -replace '\.img$', ''
+
+    echo "DKNS SITE: $ISSUEDKNS"
+    echo "DKNS IMG: $TESTIMGDKNS"
+
+    psexec -accepteula \\$AgentIP -u Agent -p wjdqhqhdks001! -i 2 -h cmd /C start /MIN C:/test.bat $TESTIMG $ISSUE $TEST $Agent $dkns
+  displayName: 'Azure Start VM/Run Test(PsExec)'
+  workingDirectory: $(Build.SourcesDirectory)/start
